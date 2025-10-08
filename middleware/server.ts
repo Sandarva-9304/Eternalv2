@@ -577,8 +577,9 @@ app.get(
     );
   }
 );
-const HOST = "127.0.0.1";
-httpServer.listen(3000, HOST, async () => {
+// const HOST = "127.0.0.1";
+const PORT = process.env.PORT || 3000;
+httpServer.listen(PORT, async () => {
   // await connectToDatabase(
   //   "mongodb+srv://sahil_ansari_47:Codename%4047@cluster0.2wo5v83.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
   // );
