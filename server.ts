@@ -212,11 +212,13 @@ io.on("connection", (socket: Socket) => {
     "removePending",
     async ({ username, chatKey }: { username: string; chatKey: string }) => {
       const listKey = `${username}:pending`;
+      console.log("removePending hit", listKey, chatKey);
       // Get all pending messages
       const pendingMessages = (await redis.lrange(listKey, 0, -1)) as Message[];
       console.log(pendingMessages);
       // Filter out ones that match chatKey
       const kept = pendingMessages.filter((msg: Message) => {
+        console.log(msg.chatKey, chatKey);
         return msg.chatKey !== chatKey;
       });
       // Replace list with filtered ones
