@@ -11,6 +11,7 @@ export interface IUser extends Document {
     connectedAt: Date;
   };
   groups?: Object[];
+  githubAvatarEtag?: string;
 }
 const UserSchema: Schema = new Schema<IUser>(
   {
@@ -25,6 +26,7 @@ const UserSchema: Schema = new Schema<IUser>(
       connectedAt: { type: Date, required: false },
     },
     groups: [{ type: Object, required: false }],
+    githubAvatarEtag: { type: String, required: false },
   },
   { timestamps: true }
 );

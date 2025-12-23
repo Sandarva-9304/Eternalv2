@@ -314,24 +314,34 @@ const syncUser = async (
     const clerkUser = await clerkClient.users.getUser(userId);
     const username = clerkUser.username;
     const imageUrl = `https://github.com/${username}.png`;
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-      throw new Error("Failed to fetch GitHub avatar");
+    const headRes = await fetch(imageUrl, { method: "HEAD" });
+    if (!headRes.ok) throw new Error("Failed to check GitHub avatar");
+
+    const newEtag = headRes.headers.get("etag");
+    const existingUser = await UserModel.findOne({ uid: clerkUser.id });
+
+    const avatarChanged = newEtag && newEtag !== existingUser?.githubAvatarEtag;
+
+    if (existingUser && avatarChanged) {
+      const response = await fetch(imageUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch GitHub avatar");
+      }
+
+      const buffer = Buffer.from(await response.arrayBuffer());
+
+      const file = new File([buffer], "avatar.png", {
+        type: "image/png",
+      });
+
+      await clerkClient.users.updateUserProfileImage(userId, { file });
     }
-
-    const buffer = Buffer.from(await response.arrayBuffer());
-
-    const file = new File([buffer], "avatar.png", {
-      type: "image/png",
-    });
-
-    await clerkClient.users.updateUserProfileImage(userId, { file });
-
     const mongoUser = await UserModel.findOneAndUpdate(
       { uid: clerkUser.id },
       {
         username,
         avatar: imageUrl,
+        githubAvatarEtag: newEtag,
       },
       { upsert: true, new: true }
     );
